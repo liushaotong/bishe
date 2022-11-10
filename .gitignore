@@ -145,3 +145,12 @@ static/
 *.csv
 *.sav
 .idea/
+.idea
+.project
+.settings/
+.prefs
+.pydevproject
+.DS_Store
+*.pyc
+*.html
+*.xlm
