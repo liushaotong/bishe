@@ -144,3 +144,4 @@ static/
 *.jpg
 *.csv
 *.sav
+.idea/
