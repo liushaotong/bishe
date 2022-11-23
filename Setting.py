@@ -1,5 +1,5 @@
 input_dimension = 20
-task = 'svhn'
+task = 'cifar10'
 csv_list = ['complexity.dist_spec_init', 'complexity.fro_dist', 'complexity.fro_over_spec', 'complexity.inverse_margin',
             'complexity.log_prod_of_fro', 'complexity.log_prod_of_fro_over_margin', 'complexity.log_prod_of_spec',
             'complexity.log_prod_of_spec_over_margin', 'complexity.log_spec_init_main', 'complexity.log_spec_orig_main',

@@ -154,3 +154,6 @@ static/
 *.pyc
 *.html
 *.xlm
+NPPM/.idea
+NPPM/checkpoint/
+NPPM/datasets/
