@@ -157,3 +157,5 @@ static/
 NPPM/.idea
 NPPM/checkpoint/
 NPPM/datasets/
+NPPM/log/
+/logging/

@@ -29,7 +29,7 @@ def gumbel_softmax_sample(logits, T, offset=0):
     #y = logits + offset
     return F.sigmoid(y / T)
 
-def hard_concrete(out):
+def hard_concrete(out):  # 0.5为阈值
     out_hard = torch.zeros(out.size())
     out_hard[out>=0.5]=1
     out_hard[out<0.5] = 0
@@ -257,7 +257,7 @@ class simple_gate(nn.Module):
         return self.weight
 
 
-class PP_Net(nn.Module):
+class PP_Net(nn.Module):  # 使用门控
     def __init__(self, structure=None, wn_flag=True):
         super(PP_Net, self).__init__()
 
@@ -316,7 +316,7 @@ class PP_Net(nn.Module):
         # print(arch_vector[0].size())
         return arch_vector
 
-class Simple_PN(nn.Module):
+class Simple_PN(nn.Module):  #不适用门控
     def __init__(self, structure=None, seperate=False, sparsity=0.4):
         super(Simple_PN, self).__init__()
 

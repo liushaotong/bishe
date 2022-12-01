@@ -52,12 +52,12 @@ transform_test = transforms.Compose([
 trainset = torchvision.datasets.CIFAR10(root='./datasets/cifar10/', train=True, download=True, transform=transform_train)
 
 train_sampler,val_sampler = TrainVal_split(trainset, 0.1,shuffle_dataset=True)
-trainloader = torch.utils.data.DataLoader(trainset, batch_size=128, num_workers=2)
-validloader = torch.utils.data.DataLoader(trainset, batch_size=128, num_workers=4,sampler=val_sampler)
+trainloader = torch.utils.data.DataLoader(trainset, batch_size=128, num_workers=0)
+validloader = torch.utils.data.DataLoader(trainset, batch_size=128, num_workers=0,sampler=val_sampler)
 
 testset = torchvision.datasets.CIFAR10(root='./datasets/cifar10/', train=False, download=True, transform=transform_test)
 
-testloader = torch.utils.data.DataLoader(testset, batch_size=100, shuffle=False, num_workers=2)
+testloader = torch.utils.data.DataLoader(testset, batch_size=100, shuffle=False, num_workers=0)
 
 
 net = MobileNetV2()

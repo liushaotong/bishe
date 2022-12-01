@@ -84,7 +84,7 @@ class virtual_gate(nn.Module):
      #   self.grads = None
         #self.gate_f.requires_grad=True
     def forward(self, input):
-        if len(input.size())==2:
+        if len(input.size())==2:  # 全连接
 
             # if self.training:
             #     self.h = self.gate_f.register_hook(lambda grad: grad)
@@ -98,7 +98,7 @@ class virtual_gate(nn.Module):
 
             return input
 
-        elif len(input.size())==4:
+        elif len(input.size())==4:  # 卷积
             # if self.training:
             #     self.h = self.gate_f.register_hook(lambda grad: grad)
             gate_f = self.gate_f.unsqueeze(0).unsqueeze(-1).unsqueeze(-1)

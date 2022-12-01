@@ -68,11 +68,11 @@ def downsample_basic_block(x, planes):
 
 class ResNet(nn.Module):
 
-    def __init__(self, depth, dataset='cifar10', cfg=None, width=1, gate_flag=False):
+    def  __init__(self, depth, dataset='cifar10', cfg=None, width=1, gate_flag=False):
         super(ResNet, self).__init__()
         # Model type specifies number of layers for CIFAR-10 model
         assert (depth - 2) % 6 == 0, 'depth should be 6n+2'
-        n = (depth - 2) // 6
+        n = (depth - 2) // 6  # n=9
 
         block = BasicBlock
         if cfg == None:
@@ -146,7 +146,7 @@ class ResNet(nn.Module):
         self.structure = structure
         return sum(structure), structure
 
-    def set_vritual_gate(self, arch_vector):
+    def set_vritual_gate(self, arch_vector):  # arch_vector：一个1008维（一共要减的通道数，而不是一共的）的tensor 结构向量
         i = 0
         start = 0
         for m in self.modules():
