@@ -107,12 +107,12 @@ for layer_id in range(len(old_modules)):
 
     elif isinstance(m0, nn.Conv2d):
         # print(old_modules[layer_id+2])
-        if conv_count == 0:
+        if conv_count == 0:  # 第一个直接复制
             m1.weight.data = m0.weight.data.clone()
             conv_count += 1
             continue
 
-        if isinstance(old_modules[layer_id + 3], virtual_gate):
+        if isinstance(old_modules[layer_id + 3], virtual_gate):  # 如果三个组件以后是gate就向下执行
             print(conv_count)
             conv_count += 1
             idx0 = np.squeeze(np.argwhere(np.asarray(start_mask.cpu().numpy())))
@@ -141,7 +141,7 @@ for layer_id in range(len(old_modules)):
                 end_mask = parameters[soft_gate_count]
 
             continue
-        if isinstance(old_modules[layer_id - 1], virtual_gate):
+        if isinstance(old_modules[layer_id - 1], virtual_gate):  # 如果上一个组件是gate，就跳过执行下一轮
             continue
         # We need to consider the case where there are downsampling convolutions.
         # For these convolutions, we just copy the weights.

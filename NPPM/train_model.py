@@ -103,6 +103,10 @@ def main():
             model_name = '%s-base' % (args.model_name)
         else:
             stat_dict = torch.load('./checkpoint/%s_new.pth.tar' % (args.model_name))
+            net = NiN(depth=HParams.model_depth, width=HParams.model_width, base_width=HParams.base_width,
+                      dataset_type=HParams.dataset_type, cfg=stat_dict['cfg'])
+            net.load_state_dict(stat_dict['state_dict'])
+            model_name = '%s-ft' % (args.model_name)
 
     budget_epoch = args.epoch
     net.cuda()

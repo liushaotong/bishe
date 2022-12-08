@@ -10,8 +10,8 @@
 import torch
 from torch import Tensor
 import torch.nn as nn
-from NPPM.models.gate_function import virtual_gate
-from NPPM.models.nin_experiment_config import DatasetType
+from .gate_function import virtual_gate
+from .nin_experiment_config import DatasetType
 
 
 class ExperimentBaseModel(nn.Module):
