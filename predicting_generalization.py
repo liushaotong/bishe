@@ -5,12 +5,13 @@ import scipy.stats as stats
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import minmax_scale
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.svm import SVR
-from xgboost import XGBRegressor
+
+# from xgboost import XGBRegressor
 from sklearn.metrics import mean_squared_error, r2_score
 import matplotlib.pyplot as plt
-
+from Setting import *
 import torch
 from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
@@ -85,7 +86,7 @@ def plot_two(pre_y_list, y):
 def main():
     data_train = pd.read_csv('./nin.cifar10_svhn.csv')
     # data_train['hp.dataset']=='cifar10' or 'svhn  #超参数设置
-    data_train = data_train[np.logical_and(data_train['hp.dataset']=='svhn', data_train['is.converged']==True, data_train['is.high_train_accuracy']==True)]
+    data_train = data_train[np.logical_and(data_train['hp.dataset']==task, data_train['is.converged']==True, data_train['is.high_train_accuracy']==True)]
     # kt_list = kendall_tau(data_train)
     # kt_list = None
     # to_excel(data_train, kt_list)
@@ -96,8 +97,9 @@ def main():
 
     data_train_target = data_train.loc[:, ['gen.gap']]
     y = data_train_target.values.flatten()
-    data_train_x = pd.read_csv('./svhn_unfilter.csv')  # 超参数设置
-    X = data_train_x.values[:, 1:]
+    # data_train_x = pd.read_csv('./svhn_unfilter.csv')  # 超参数设置
+    # X = data_train_x.values[:, 1:]
+    X = data_train[train_list].values
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
 
 
@@ -107,7 +109,8 @@ def main():
     #                     reg_alpha=1, reg_lambda=1)
     # regr = SVR()
     # regr = RandomForestRegressor()
-    # regr = XGBRegressor()
+    # regr = GradientBoostingRegressor()
+
     # regr.fit(X_train, y_train)
     # y_pred = regr.predict(X_test)
     # pre_y_list = regr.predict(X)
@@ -139,7 +142,7 @@ def main():
             x = torch.relu(x)  #
             x = self.layer3(x)
             return x
-    net = Net(20, 1).cuda()  # 输入维度！！
+    net = Net(input_dimension, 1).cuda()  # 输入维度！！
     # Adam
     optimizer = torch.optim.Adam(net.parameters(), lr=0.001)
     # 均方损失函数
@@ -167,6 +170,9 @@ def main():
         eval_losses.append(eval_loss / len(test_data))
         print('epoch: {}, trainloss: {}, evalloss: {}'.format(i, train_loss / len(train_data),
                                                               eval_loss / len(test_data)))
+        y_pred = net(test_features).squeeze().detach().cpu().numpy()
+        print("训练集合上RMSE = {:.3f}".format(np.sqrt(mean_squared_error(y_test, y_pred))))
+        print("训练集合上R^2 = {:.3f}".format(r2_score(y_test, y_pred)))
     y_pred = net(test_features).squeeze().detach().cpu().numpy()
     all_features = torch.from_numpy(X.astype(np.float32)).cuda()
     pre_y_list = net(all_features).squeeze().detach().cpu().numpy()
