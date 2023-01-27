@@ -16,8 +16,8 @@ def set_grad(var):
     return hook
 
 
-def train_epm(train_loader, model, optimizer, optimizer_p, epoch, args, resource_constraint, hyper_net=None,
-              pp_net=None, epm=None, ep_bn=64, orth_grad=False, use_sampler=True, loss_type='mae'):
+def train_epm(x_axis, y_axis, count, train_loader, model, optimizer, optimizer_p, epoch, args, resource_constraint, hyper_net=None,
+              pp_net=None, epm=None, ep_bn=64, orth_grad=False, use_sampler=True, loss_type='mae',):
     tqdm_loader = tqdm(train_loader)
     model.eval()
     pp_net.train()
@@ -68,10 +68,10 @@ def train_epm(train_loader, model, optimizer, optimizer_p, epoch, args, resource
 
         if epm_flag:  # 如果使用记忆模块的损失
             # epm_vector = vector
-            vector = vector + args.nf * torch.randn(vector.size()).cuda()
+            vector = vector + args.nf * torch.randn(vector.size()).cuda()  # 随机化？
             vector = torch.clamp(vector, min=0, max=1)
 
-            pred = pp_net(vector)
+            pred = pp_net(vector)  # 预测性能
             p_loss = torch.log(1 / pred)
             if not orth_grad:
                 h_loss = res_loss + c_loss + p_loss
@@ -82,7 +82,7 @@ def train_epm(train_loader, model, optimizer, optimizer_p, epoch, args, resource
         optimizer.zero_grad()
 
         if epm_flag:
-            if orth_grad:
+            if orth_grad:  # 走这里
                 c_loss.backward(retain_graph=True)
                 l_grads = hyper_net.get_grads()
                 p_loss.backward()
@@ -101,8 +101,8 @@ def train_epm(train_loader, model, optimizer, optimizer_p, epoch, args, resource
             h_loss.backward()
         optimizer.step()
 
-        if epm_flag:
-            vectors, accs = next(iter(epm_loader))
+        if epm_flag:  # 训练pp_net
+            vectors, accs = next(iter(epm_loader))  # 从epm取数据
             vectors, accs = vectors.cuda(), accs.cuda()
             pred_p = pp_net(vectors).squeeze()
 
@@ -115,17 +115,25 @@ def train_epm(train_loader, model, optimizer, optimizer_p, epoch, args, resource
             loss.backward()
             optimizer_p.step()
             with torch.no_grad():
-
                 record_loss = F.l1_loss(pred_p, accs.float())
-
         else:
             record_loss = torch.Tensor([0])
+
+        # # 记录损失值
+        # if count > 6:
+        #     y_axis.append(record_loss.cpu())
+        #     x_axis.append(batch_idx + 20*(count-7))
+
+        # # 记录性能预测和真值
+        # if count > 6:
+        #     with torch.no_grad():
+        #         y_axis = accs.cpu().numpy()
+        #         x_axis = pred_p.cpu().numpy()
 
         with torch.no_grad():  # 把局部准确率记入模块
             _, predicted = outputs.detach().max(1)
             local_correct = predicted.eq(targets).sum()
             local_acc = local_correct.float() / float(targets.size(0))
-
             epm.insert_data(sub_arch=concrete_vector.detach(), local_acc=local_acc.detach())
 
         total += targets.size(0)
@@ -143,6 +151,7 @@ def train_epm(train_loader, model, optimizer, optimizer_p, epoch, args, resource
         ' * Epoch{epoch: d} Loss {loss:.3f} Res Loss {resloss: .3f} Hyper Loss {hyperloss: .3f} Acc@1 {top1:.3f}'
             .format(epoch=epoch, loss=train_loss / len(train_loader), resloss=resource_loss / len(train_loader),
                     hyperloss=hyper_loss / len(train_loader), top1=correct / total))
+    return x_axis, y_axis
 
 
 def retrain(epoch, net, criterion, trainloader, optimizer, smooth=True, scheduler=None, alpha=0.5):
@@ -261,3 +270,11 @@ def valid(epoch, net, testloader, best_acc, hyper_net=None, model_string=None, s
           % (test_loss / len(testloader), 100. * correct / total, correct, total, best_acc))
 
     return best_acc, test_loss / len(testloader), 100. * correct / total
+
+
+def valid_pp(vector, ):
+    pass
+
+
+def valid_acc(vector, test_loader, ):
+    pass

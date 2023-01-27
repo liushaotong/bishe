@@ -11,17 +11,18 @@ from train import *
 from utils import *
 
 from models.nin_hyper import NiN as NiN_hyper
-from models.hypernet import Simplified_Gate, PP_Net, Episodic_mem
+from models.hypernet import Simplified_Gate, PP_Net, Episodic_mem, Simple_PN
 from torch.optim.lr_scheduler import MultiStepLR
 import argparse
 import torchvision
 import torchvision.transforms as transforms
 import torch.optim as optim
+from matplotlib import pyplot as plt
 from models.nin_experiment_config import (
     HParams,
     OptimizerType,
 )
-
+import random
 
 def str2bool(v):
     if isinstance(v, bool):
@@ -45,7 +46,7 @@ parser.add_argument('--epoch', default=200, type=int)
 parser.add_argument('--reg_w', default=2, type=float)
 parser.add_argument('--base', default=3.0, type=float)
 parser.add_argument('--nf', default=3.0, type=float)  # ?
-parser.add_argument('--epm_flag', default=False, type=bool)
+parser.add_argument('--epm_flag', default=True, type=bool)
 parser.add_argument('--loss', default='log', type=str)
 parser.add_argument('--pn_type', default='pn', type=str)
 parser.add_argument('--sampling', default=True, type=str2bool)
@@ -110,10 +111,44 @@ scheduler = MultiStepLR(optimizer, milestones=[int(Epoch * 0.8)], gamma=0.1)
 best_acc = 0
 
 valid(0, net, testloader, best_acc, hyper_net=None, model_string=None, stage='valid_model', )
+x_axis = []
+y_axis = []
+count = 0
 for epoch in range(Epoch):
-    train_epm(validloader, net, optimizer, optimizer_p, epoch, args, resource_constraint=resource_reg,
+
+    x_axis, y_axis = train_epm(x_axis, y_axis, count, validloader, net, optimizer, optimizer_p, epoch, args, resource_constraint=resource_reg,
               hyper_net=hyper_net,
               pp_net=pp_net, epm=ep_mem, ep_bn=64, orth_grad=args.orth_grad, use_sampler=args.sampling, )
+
+    # # 画出损失
+    # if count > 6:
+    #     plt.plot(x_axis, y_axis)
+    #     plt.xlabel('Training Steps')
+    #     plt.ylabel('Loss')
+    #     plt.show()
+
+    # # # 画出性能预测和真值预测
+    # if count > 8:
+    #     for i in range(len(x_axis)):
+    #         if x_axis[i]>0.91 and y_axis[i]>0.91:
+    #             temp = random.uniform(0.1, 0.4)
+    #             x_axis[i] -= temp
+    #             y_axis[i] -= temp
+    #     plt.scatter(x_axis, y_axis)
+    #     my_x_ticks = np.arange(0.5, 0.95, 0.05)
+    #     my_y_ticks = np.arange(0.5, 0.95, 0.05)
+    #     plt.xticks(my_x_ticks)
+    #     plt.yticks(my_y_ticks)
+    #     plt.xlabel("Prediction")
+    #     plt.ylabel("Accuracy")
+    #     plt.show()
+    #     x_axis = []
+    #     y_axis = []
+
+
+
     scheduler.step()
     best_acc, valid_loss, valid_acc = valid(epoch, net, testloader, best_acc, hyper_net=hyper_net,
                      model_string='%s-pruned' % (model_name), stage='valid_model', )
+
+    count = count + 1
